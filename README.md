@@ -162,4 +162,15 @@ src/main/resources/
 
 ## Kiểm thử
 
-Toàn bộ Business Rule và edge-case đã được kiểm chứng end-to-end trên ứng dụng chạy trong Docker (tạo hợp lệ, vượt 100%, phân bổ vào dự án COMPLETED, cập nhật loại trừ giá trị cũ, trùng lặp, và race condition với request đồng thời). Xem thêm báo cáo tại `docs/SUBMISSION.md`.
+**Unit test** (JUnit 5 + Mockito, không cần database — mock repository):
+
+```bash
+mvn test
+```
+
+22 test bao phủ tầng Service — nơi chứa toàn bộ Business Rule:
+- `AllocationServiceTest` — BR1/BR2/BR3, loại trừ giá trị cũ khi update (edge-case), trùng lặp, not-found, xoá.
+- `EmployeeServiceTest` — tạo, trùng mã, tính workload.
+- `ProjectServiceTest` — mặc định trạng thái, trùng mã, cập nhật trạng thái, not-found.
+
+Ngoài ra toàn bộ Business Rule và edge-case đã được kiểm chứng **end-to-end** trên ứng dụng chạy trong Docker (bao gồm cả race condition với hai request đồng thời). Xem báo cáo tại `docs/SUBMISSION.md`.
