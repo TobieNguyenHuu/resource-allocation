@@ -1,0 +1,222 @@
+{
+  "info": {
+    "name": "Resource Allocation Management System",
+    "description": "Postman collection cho hệ thống quản lý phân bổ nhân sự (FR-1..FR-13). Đặt biến {{baseUrl}} = http://localhost:8080. Thứ tự chạy gợi ý: tạo Employee -> tạo Project -> tạo Allocation -> Reports.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeCode\": \"EMP001\",\n  \"fullName\": \"Tuan Ho Anh\",\n  \"email\": \"tuanha@company.com\",\n  \"role\": \"Senior Developer\",\n  \"department\": \"FSOFT-Q1\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/employees", "host": ["{{baseUrl}}"], "path": ["employees"] },
+            "description": "FR-1. 201 Created. Trùng employeeCode -> 409 EMPLOYEE_CODE_EXISTS. Email sai/để trống -> 400 VALIDATION_ERROR."
+          }
+        },
+        {
+          "name": "Create Employee - Invalid (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeCode\": \"\",\n  \"fullName\": \"No Code\",\n  \"email\": \"not-an-email\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/employees", "host": ["{{baseUrl}}"], "path": ["employees"] },
+            "description": "Minh hoạ envelope 400 VALIDATION_ERROR + fieldErrors."
+          }
+        },
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/employees", "host": ["{{baseUrl}}"], "path": ["employees"] },
+            "description": "FR-2."
+          }
+        },
+        {
+          "name": "Get Employee by Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/employees/1", "host": ["{{baseUrl}}"], "path": ["employees", "1"] },
+            "description": "FR-2. id không tồn tại -> 404 EMPLOYEE_NOT_FOUND."
+          }
+        },
+        {
+          "name": "Get Employee Workload",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/employees/1/workload", "host": ["{{baseUrl}}"], "path": ["employees", "1", "workload"] },
+            "description": "FR-3. Trả totalAllocation + available."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create Project (ACTIVE)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectCode\": \"NCG\",\n  \"projectName\": \"NCG Platform\",\n  \"customer\": \"NCG Corp\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] },
+            "description": "FR-4. Không truyền status -> mặc định PLANNING. status sai -> 400 MALFORMED_REQUEST. Trùng code -> 409."
+          }
+        },
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] },
+            "description": "FR-5."
+          }
+        },
+        {
+          "name": "Get Project by Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/projects/1", "host": ["{{baseUrl}}"], "path": ["projects", "1"] },
+            "description": "FR-5. id không tồn tại -> 404 PROJECT_NOT_FOUND."
+          }
+        },
+        {
+          "name": "Update Project Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/projects/1/status", "host": ["{{baseUrl}}"], "path": ["projects", "1", "status"] },
+            "description": "FR-6. Chuyển PLANNING -> ACTIVE -> COMPLETED. COMPLETED sẽ chặn allocate mới (BR3)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Allocations",
+      "item": [
+        {
+          "name": "Create Allocation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"projectId\": 1,\n  \"allocationPercent\": 50,\n  \"roleInProject\": \"Backend Developer\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/allocations", "host": ["{{baseUrl}}"], "path": ["allocations"] },
+            "description": "FR-7. Cưỡng chế BR1/BR2/BR3. 201 Created."
+          }
+        },
+        {
+          "name": "Create Allocation - Exceeds 100% (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"projectId\": 3,\n  \"allocationPercent\": 60,\n  \"roleInProject\": \"Dev\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/allocations", "host": ["{{baseUrl}}"], "path": ["allocations"] },
+            "description": "BR2. Khi tổng > 100% -> 409 ALLOCATION_EXCEEDED, message 'Employee allocation exceeds 100%', kèm details."
+          }
+        },
+        {
+          "name": "Update Allocation",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allocationPercent\": 40\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/allocations/1", "host": ["{{baseUrl}}"], "path": ["allocations", "1"] },
+            "description": "FR-9. Kiểm BR2 sau khi LOẠI TRỪ giá trị cũ của chính bản ghi (edge E1). id không tồn tại -> 404."
+          }
+        },
+        {
+          "name": "Delete Allocation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/allocations/1", "host": ["{{baseUrl}}"], "path": ["allocations", "1"] },
+            "description": "FR-10. 204 No Content. Giải phóng năng lực nhân viên. id không tồn tại -> 404 ALLOCATION_NOT_FOUND."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Utilization Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/reports/utilization", "host": ["{{baseUrl}}"], "path": ["reports", "utilization"] },
+            "description": "FR-11. Tổng allocation từng nhân viên (kể cả người 0%)."
+          }
+        },
+        {
+          "name": "Available Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/reports/available-resources", "host": ["{{baseUrl}}"], "path": ["reports", "available-resources"] },
+            "description": "FR-12. Nhân viên còn trống (total < 100)."
+          }
+        },
+        {
+          "name": "Available Resources (minAvailable=50)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/available-resources?minAvailable=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "available-resources"],
+              "query": [{ "key": "minAvailable", "value": "50" }]
+            },
+            "description": "FR-12. Lọc chỉ nhân viên còn trống >= 50%."
+          }
+        },
+        {
+          "name": "Overloaded Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/reports/overloaded", "host": ["{{baseUrl}}"], "path": ["reports", "overloaded"] },
+            "description": "FR-13. Nhân viên quá tải (total > 90%)."
+          }
+        }
+      ]
+    }
+  ]
+}
