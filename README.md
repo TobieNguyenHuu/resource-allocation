@@ -140,7 +140,7 @@ Mọi lỗi trả về theo một envelope thống nhất:
 
 ## Database
 
-Schema được tạo bằng script `src/main/resources/db/schema.sql`, tự chạy khi khởi động (`spring.sql.init`). JPA đặt `ddl-auto: validate` — Hibernate không sinh DDL, chỉ kiểm tra ánh xạ Entity ⇄ bảng.
+Schema được tạo bằng script `src/main/resources/db/schema.sql`, tự chạy khi khởi động (`spring.sql.init`). JPA đặt `ddl-auto: validate` — Hibernate không sinh DDL, chỉ kiểm tra ánh xạ Entity ⇄ bảng. Dữ liệu mẫu: `src/main/resources/db/seed.sql` (chạy tay `psql -d resource_allocation -f seed.sql`).
 
 Ba bảng: `employee`, `project`, `allocation`. Ràng buộc defense-in-depth: `CHECK (allocation_percent > 0 AND <= 100)` (BR1), `UNIQUE (employee_id, project_id)` (chống trùng), khoá ngoại, và index `idx_alloc_employee` tối ưu truy vấn tổng theo nhân viên.
 
@@ -173,4 +173,4 @@ mvn test
 - `EmployeeServiceTest` — tạo, trùng mã, tính workload.
 - `ProjectServiceTest` — mặc định trạng thái, trùng mã, cập nhật trạng thái, not-found.
 
-Ngoài ra toàn bộ Business Rule và edge-case đã được kiểm chứng **end-to-end** trên ứng dụng chạy trong Docker (bao gồm cả race condition với hai request đồng thời). Xem báo cáo tại `docs/SUBMISSION.md`.
+Ngoài ra toàn bộ Business Rule và edge-case đã được kiểm chứng **end-to-end** trên ứng dụng chạy trong Docker (bao gồm cả race condition với hai request đồng thời). Xem báo cáo phát triển tại `AI-Review-Report.md`.
